@@ -1,3 +1,5 @@
+import time
+
 from aiohttp import ClientResponseError
 from fast_bitrix24 import Bitrix
 from dataclasses import dataclass
@@ -20,7 +22,7 @@ class BitrixAvatarex:
         chat_list = self.bitrix.get_all(method='im.recent.get')
         arr = []
         for chat in chat_list:
-            if 'chat' in chat.keys() and chat['chat']['role'] != 'MEMBER' and chat['message'][
+            if 'chat' in chat.keys() and chat['chat'].get('role', None) != 'MEMBER' and chat['message'][
                 'status'] == 'received' and chat['type'] == 'chat':
                 print(f'[Новое сообщение] {chat["id"]}: {chat["title"]} - {chat["message"]["text"]}')
                 arr.append(Message(chat_id=chat['id'], title=chat['title'], text=chat['message']['text']))
@@ -92,9 +94,13 @@ def execute():
             return
         messages: list[Message] = bitrix_avatarex.get_unanswered_messages()
         for message in messages:
-            bitrix_avatarex.send_message(message, gpt.run(message.text))
+            answer = gpt.execute(message.text)
+            print(f'[ОТВЕТ] {answer}')
+            bitrix_avatarex.send_message(message, answer)
         # bitrix_avatarex.fill_field()
         # bitrix_avatarex.get_fields_by_deal_id()
+        time.sleep(3)
+        print(messages)
 
 
 execute()
