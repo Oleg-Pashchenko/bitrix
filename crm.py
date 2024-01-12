@@ -95,7 +95,6 @@ def execute():
             bitrix_avatarex.send_message(message, gpt.run(message.text))
         # bitrix_avatarex.fill_field()
         # bitrix_avatarex.get_fields_by_deal_id()
-        exit(0)
 
 
 execute()
