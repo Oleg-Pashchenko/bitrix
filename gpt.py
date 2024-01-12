@@ -37,4 +37,4 @@ def execute(question: str, thread_id=None, assistant_id='asst_0AE6fTg2tKgNZx0XSK
     answer = ''
     for message in messages.data[0].content:
         answer += message.text.value + '\n'
-    return answer.strip(), thread_id
+    return answer.strip()
