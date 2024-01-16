@@ -3,7 +3,7 @@ import time
 from aiohttp import ClientResponseError
 from fast_bitrix24 import Bitrix
 from dataclasses import dataclass
-
+import datetime
 import gpt
 
 
@@ -22,8 +22,16 @@ class BitrixAvatarex:
         chat_list = self.bitrix.get_all(method='im.recent.get')
         arr = []
         for chat in chat_list:
+            try:
+                lead_id = int(str(chat).split('LEAD|')[1].split('|')[0])
+            except:
+                continue
+            status = self.get_deal(lead_id)['STATUS_ID']
+            if status not in ['NEW', 'PROCESSED', 'IN_PROCESS', '1', 'CONVERTED']:
+                continue
             if 'chat' in chat.keys() and chat['chat'].get('role', None) != 'MEMBER' and chat['message'][
                 'status'] == 'received' and chat['type'] == 'chat':
+
                 print(f'[Новое сообщение] {chat["id"]}: {chat["title"]} - {chat["message"]["text"]}')
                 arr.append(Message(chat_id=chat['id'], title=chat['title'], text=chat['message']['text']))
         return arr
@@ -40,7 +48,7 @@ class BitrixAvatarex:
     def is_connection_success(self) -> bool:
         """Returns connection status"""
         try:
-            self.bitrix.get_all(method='crm.lead.list')
+            self.bitrix.get_all(method='im.recent.get')
         except ClientResponseError:
             return False
         return True
@@ -78,23 +86,34 @@ class BitrixAvatarex:
         })
         print(response)
 
-    def get_fields_by_deal_id(self):
-        response = self.bitrix.call(method='crm.deal.get', items={
-            'id': 1
+    def get_deal(self, deal_id):
+        response = self.bitrix.call(method='crm.lead.get', items={
+            'id': deal_id
         })
-        print(response)
+        return response
 
 
 def execute():
     while True:
         webhook_test = 'https://avatarex.bitrix24.ru/rest/42/eg712ozo8h3634fj/'
+        webhook_test = 'https://solutionpro.bitrix24.ru/rest/26447/jgdhsezzfqewow7k/'
+        webhook_test = 'https://solutionpro.bitrix24.ru/rest/26447/b18f6vmj69dpikl9/'
         bitrix_avatarex = BitrixAvatarex(webhook=webhook_test)
+        print('подключаюсь')
+
         connection_status: bool = bitrix_avatarex.is_connection_success()
+        # print(connection_status)
+        # print(bitrix_avatarex.get_info())
+        # exit(0) # C1:FINAL_INVOICE Не дозвонились
+# C1:PREPAYMENT_INVOICE В работе
+        #
+
         if not connection_status:
             return
+
         messages: list[Message] = bitrix_avatarex.get_unanswered_messages()
         for message in messages:
-            answer = gpt.execute(message.text)
+            answer = gpt.execute(message.text, assistant_id='asst_wBbToEt5EdsJpGKEczo3BRsD')
             print(f'[ОТВЕТ] {answer}')
             bitrix_avatarex.send_message(message, answer)
         # bitrix_avatarex.fill_field()
