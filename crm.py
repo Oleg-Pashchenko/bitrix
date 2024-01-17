@@ -27,8 +27,8 @@ class BitrixAvatarex:
             except:
                 continue
             status = self.get_deal(lead_id)['STATUS_ID']
-            if status not in ['NEW', 'PROCESSED', 'IN_PROCESS', '1', 'CONVERTED']:
-                continue
+            # if status not in ['NEW', 'PROCESSED', 'IN_PROCESS', '1', 'CONVERTED']:
+            #    continue
             if 'chat' in chat.keys() and chat['chat'].get('role', None) != 'MEMBER' and chat['message'][
                 'status'] == 'received' and chat['type'] == 'chat':
 
