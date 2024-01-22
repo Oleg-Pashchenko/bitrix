@@ -22,13 +22,14 @@ class BitrixAvatarex:
         chat_list = self.bitrix.get_all(method='im.recent.get')
         arr = []
         for chat in chat_list:
+
             try:
                 lead_id = int(str(chat).split('LEAD|')[1].split('|')[0])
             except:
                 continue
             status = self.get_deal(lead_id)['STATUS_ID']
-            # if status not in ['NEW', 'PROCESSED', 'IN_PROCESS', '1', 'CONVERTED']:
-            #    continue
+            if status not in ['NEW', 'PROCESSED', 'IN_PROCESS', '1', 'CONVERTED']:
+                continue
             if 'chat' in chat.keys() and chat['chat'].get('role', None) != 'MEMBER' and chat['message'][
                 'status'] == 'received' and chat['type'] == 'chat':
 
@@ -113,7 +114,7 @@ def execute():
 
         messages: list[Message] = bitrix_avatarex.get_unanswered_messages()
         for message in messages:
-            answer = gpt.execute(message.text, assistant_id='asst_wBbToEt5EdsJpGKEczo3BRsD')
+            answer = gpt.execute(message.text, assistant_id='asst_WdMb0jXCuZgX9qN2W3zihFHl')
             print(f'[ОТВЕТ] {answer}')
             bitrix_avatarex.send_message(message, answer)
         # bitrix_avatarex.fill_field()
