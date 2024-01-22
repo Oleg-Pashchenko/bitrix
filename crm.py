@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from aiohttp import ClientResponseError
@@ -32,7 +33,6 @@ class BitrixAvatarex:
                 continue
             if 'chat' in chat.keys() and chat['chat'].get('role', None) != 'MEMBER' and chat['message'][
                 'status'] == 'received' and chat['type'] == 'chat':
-
                 print(f'[Новое сообщение] {chat["id"]}: {chat["title"]} - {chat["message"]["text"]}')
                 arr.append(Message(chat_id=chat['id'], title=chat['title'], text=chat['message']['text']))
         return arr
@@ -94,7 +94,7 @@ class BitrixAvatarex:
         return response
 
 
-def execute():
+async def execute():
     while True:
         webhook_test = 'https://avatarex.bitrix24.ru/rest/42/eg712ozo8h3634fj/'
         webhook_test = 'https://solutionpro.bitrix24.ru/rest/26447/jgdhsezzfqewow7k/'
@@ -106,7 +106,7 @@ def execute():
         # print(connection_status)
         # print(bitrix_avatarex.get_info())
         # exit(0) # C1:FINAL_INVOICE Не дозвонились
-# C1:PREPAYMENT_INVOICE В работе
+        # C1:PREPAYMENT_INVOICE В работе
         #
 
         if not connection_status:
@@ -114,7 +114,7 @@ def execute():
 
         messages: list[Message] = bitrix_avatarex.get_unanswered_messages()
         for message in messages:
-            answer = gpt.execute(message.text, assistant_id='asst_WdMb0jXCuZgX9qN2W3zihFHl')
+            answer, thread = await gpt.execute(message.text, assistant_id='asst_WdMb0jXCuZgX9qN2W3zihFHl')
             print(f'[ОТВЕТ] {answer}')
             bitrix_avatarex.send_message(message, answer)
         # bitrix_avatarex.fill_field()
@@ -123,4 +123,4 @@ def execute():
         print(messages)
 
 
-execute()
+asyncio.run(execute())
